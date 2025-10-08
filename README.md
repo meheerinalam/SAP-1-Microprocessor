@@ -8,7 +8,7 @@ Each stage of development, from manual control sequencing to automated microcode
 
 The repository is organized into branches:
 
-1. *sap1-foundation* — contains the primary CPU design, built during the early development phase.
+1. *early CPU design* — contains the primary CPU design, built during the early development phase.
 
 2. *main* — holds the latest and complete SAP-1 implementation with enhanced features and control automation.
- Kindly find them on the branch.
+ Kindly find them on the branch for the fundamental understanding of the prototype.
