@@ -12,7 +12,9 @@ The repository is organized into branches:
 
 2. *main* — holds the latest and complete SAP-1 implementation with enhanced features and control automation.
    
-Kindly find them on the branch for the fundamental understanding of the prototype.
+Kindly find them on the branch for the fundamental understanding of the prototype. All the neccessary images for the circuita are attached to sap-1 v.2 file.
+
+To implement this CPU, specific components have been modified and a new control sequencer circuit has been designed.
 
 ## SAP-1: Design Philosophy & Build Steps 
 
