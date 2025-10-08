@@ -6,7 +6,7 @@ The design includes the core functional units — General-Purpose Register, Arit
 
 This early version represents the first functional prototype of the CPU, built to understand and validate the essential concepts of data transfer, storage, and execution before developing the full SAP-1 system.
 
-The execution for this CPU was manually controlled, meaning all the control signals were pulled up and pulled down one-by one by hand.
+The execution for this CPU was manually controlled, meaning all the control signals were pulled up and pulled down one-by one by hand. All circuits Images are given into the SAP-1 v.1 file.
 
 ## SAP-1 Build & Run — Step-by-Step
 
