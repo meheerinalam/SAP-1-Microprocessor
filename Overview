@@ -1,0 +1,91 @@
+# Theory Overview
+
+The early version of the **SAP-1 CPU** is a bus-organized microprocessor based on the **Von Neumann** architecture. It consists of several core components that work together to fetch, decode, and execute instructions stored in memory. Each component plays a distinct role in the data and control flow of the system.
+
+---
+
+## Program Counter (PC)
+
+The **Program Counter** stores and outputs the memory address of the next instruction to be fetched and executed. It counts sequentially from `0000` to `1111`, corresponding to the program’s location in memory.
+
+- On reset, it initializes to `0000`.
+- During fetch, the PC places its address on the bus, then **increments** automatically to keep track of execution flow.
+
+---
+
+## Memory Address Register (MAR)
+
+The **MAR** holds the 4-bit address of the data or instruction to be accessed in memory.
+
+- The address from the PC is sent via the system bus to the MAR.
+- The MAR forwards this address to **RAM** for reads (or writes, if supported).
+
+---
+
+## Random Access Memory (RAM)
+
+The SAP-1 uses a **16 × 8 RAM** (16 locations × 8 bits).
+
+- Memory can be manually programmed before execution.
+- At runtime, the MAR supplies the address and RAM places the addressed **byte** (instruction or data) onto the bus.
+
+---
+
+## Instruction Register (IR)
+
+The **IR** temporarily holds the current 8-bit instruction fetched from memory.
+
+- The instruction is split into:
+  - **Opcode**: upper nibble → sent to the control unit.
+  - **Operand/Address**: lower nibble → made available on the bus when needed.
+
+---
+
+## Controller–Sequencer
+
+The **Controller–Sequencer** generates the **control word** (12-bit) that coordinates all CPU operations, ensuring registers, buses, and memory interact in sync with timing states.
+
+**Format:**
+<pre> ```text CON = Cp Ep ~Lm ~CE ~Li ~Ei ~La Eu Su Eu ~Lb ~Lo ``` </pre>
+
+
+> Each bit corresponds to an enable/load/active-low control for a unit or bus direction per timing step.
+
+---
+
+## Accumulator (A-Register)
+
+The **Accumulator** is an 8-bit buffer register that stores intermediate arithmetic results.
+
+- It **continuously drives the ALU** input.
+- It only outputs to the bus when its enable signal (e.g., `Ea`) is asserted.
+
+---
+
+## Adder–Subtractor (ALU)
+
+The **ALU** performs arithmetic using two’s-complement logic.
+
+- With subtraction control `Su = 0`: computes `A + B`.
+- With `Su = 1`: computes `A + B'` (i.e., `A − B` with carry-in).
+- The result can be sent to the **Output Register** or written back to the **Accumulator**.
+
+---
+
+## B-Register
+
+The **B-Register** provides the secondary operand for the ALU.
+
+- It **latches** data from the bus when `Lb` (load B) is active (low in this design).
+- Holds its value stable for ALU operations.
+
+---
+
+## Output Register
+
+The **Output Register** holds the final result after arithmetic operations.
+
+- The value is transferred via the bus and **latched** when `Lo` (load output) is active (low).
+- Drives external displays (LEDs, 7-segment, etc.).
+
+---
