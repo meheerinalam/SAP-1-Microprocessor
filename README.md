@@ -21,7 +21,7 @@ The execution for this CPU was manually controlled, meaning all the control sign
   - 4-bit asynchronous counter (JK-FF based) with `pc_en`, `pc_reset`, and bus output enable `pc_out_en`. 
 
 ### 2) Build memory & addressing path
-- ** 4→16 decoder** to select one of 16 RAM addresses from a 4-bit address. 
+- **4→16 decoder** to select one of 16 RAM addresses from a 4-bit address. 
 - **SRAM cell (subcircuit)**:
   - Register core with `wr_en`, `rd_en`, combined by `cs` (chip-select). 
 - **16×8 RAM**:
