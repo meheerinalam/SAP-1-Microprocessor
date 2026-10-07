@@ -19,35 +19,34 @@ To implement this CPU, specific components have been modified and a new control 
 ## SAP-1: Design Philosophy & Build Steps 
 
 ### Design Philosophy
-- **Go beyond textbook SAP-1** by adding automation and software–hardware integration (microcoded control, RAM auto-loader, assembler) to make the platform scalable and realistic. :contentReference[oaicite:0]{index=0}
+- **Go beyond textbook SAP-1** by adding automation and software–hardware integration (microcoded control, RAM auto-loader, assembler) to make the platform scalable and realistic. 
 - **Layered architecture** to isolate concerns:
   - *Hardware (data path + bus)* for correctness and timing,
   - *Microcoded control layer* for instruction sequencing and extensibility,
-  - *Automation layer* for practical program loading and tooling. :contentReference[oaicite:1]{index=1}
-- **Unique capability**: add `JMP` to enable control flow (loops/branching) absent in classical SAP-1. :contentReference[oaicite:2]{index=2}
+  - *Automation layer* for practical program loading and tooling. 
+- **Unique capability**: add `JMP` to enable control flow (loops/branching) absent in classical SAP-1. 
 
 ### 1) Define scope, tools, and objectives
-- Objectives: implement **microcode control sequencer**, **RAM auto-loader**, **JMP**, and a **Python assembler**. :contentReference[oaicite:3]{index=3}
-- Tooling: Logisim Evolution (design/simulation) + Jupyter/Python (assembler). :contentReference[oaicite:4]{index=4}
+- Objectives: implement **microcode control sequencer**, **RAM auto-loader**, **JMP**, and a **Python assembler**.
+- Tooling: Logisim Evolution (design/simulation) + Jupyter/Python (assembler).
 
 ### 2) Establish the baseline SAP-1 data path
-- Build the classic modules (PC, MAR, RAM 16×8, IR, A, B, ALU, Output) on an **8-bit system bus** with a clock/timing unit. Emphasize modularity and synchronized signals across T-states. :contentReference[oaicite:5]{index=5}
+- Build the classic modules (PC, MAR, RAM 16×8, IR, A, B, ALU, Output) on an **8-bit system bus** with a clock/timing unit. Emphasize modularity and synchronized signals across T-states. 
 
 ### 3) Microcoded Control Sequencer (heart of the system)
-- **Addressing**: 7-bit microaddress = `Opcode[3:0] + T-state[2:0]`. One entry per `(instruction, T)` pair. :contentReference[oaicite:6]{index=6}
-- **Microinstruction width**: 13-bit control word (drives enables/loads for each unit). :contentReference[oaicite:7]{index=7}
-- **Problem solved**: manual wiring is brittle; microcode centralizes control and **scales** as you add instructions. :contentReference[oaicite:8]{index=8}
+- **Addressing**: 7-bit microaddress = `Opcode[3:0] + T-state[2:0]`. One entry per `(instruction, T)` pair. 
+- **Microinstruction width**: 13-bit control word (drives enables/loads for each unit).
+- **Problem solved**: manual wiring is brittle; microcode centralizes control and **scales** as you add instructions. 
 
 ### 4) Define universal T-states (Fetch/Decode/Execute framing)
-- Execute each instruction in **6 T-states**; map standard fetch first, then instruction-specific steps. :contentReference[oaicite:9]{index=9}
+- Execute each instruction in **6 T-states**; map standard fetch first, then instruction-specific steps. 
 - Baseline sequence used in your design:
-  - `T1: PC → MAR`, `T2: RAM → IR`, `T3: PC++`, `T4–T6: opcode-specific`. :contentReference[oaicite:10]{index=10}
+  - `T1: PC → MAR`, `T2: RAM → IR`, `T3: PC++`, `T4–T6: opcode-specific`. 
 
 ### 5) Generate timing (ring counter) and decode opcodes
-- **Ring counter** (PC + 4×16 decoder) emits T1…T6; **auto-reset at T6**; buffered for controlled resets. :contentReference[oaicite:11]{index=11}
-- **Instruction decoder** (4×16 decoder) driven by IR’s upper nibble → one-hot opcode lines (dictionary below). :contentReference[oaicite:12]{index=12}
-- **Opcode dictionary** used: `LDA=0001`, `LDB=0010`, `ADD=0100`, `SUB=0101`, `JMP=1000`, `HLT=1111`. :contentReference[oaicite:13]{index=13}
-
+- **Ring counter** (PC + 4×16 decoder) emits T1…T6; **auto-reset at T6**; buffered for controlled resets. 
+- **Instruction decoder** (4×16 decoder) driven by IR’s upper nibble → one-hot opcode lines (dictionary below). 
+- **Opcode dictionary** used: `LDA=0001`, `LDB=0010`, `ADD=0100`, `SUB=0101`, `JMP=1000`, `HLT=1111`. 
 ### 6) Compose the Control Sequencer
 - Combine **ring counter** (T-state) with **instruction decoder** (opcode) to index microcode and assert control lines.
 - Documented micro-ops per instruction (examples):
@@ -56,24 +55,24 @@ To implement this CPU, specific components have been modified and a new control 
   - **SUB addr**: `…`, `T6 A−B→A`.  
   - **OUT**: `T4 A→OUT`.  
   - **JMP**: `T4 CONST(1000₂)→Bus`, `T5 Bus→PC`.  
-  - **HLT**: `T4 Stop clock`. :contentReference[oaicite:14]{index=14}
+  - **HLT**: `T4 Stop clock`. 
 
 ### 7) RAM Auto-Loader (solve slow/fragile manual entry)
-- **Goal**: eliminate switch-by-switch RAM programming; simulate realistic boot. :contentReference[oaicite:15]{index=15}
-- **Design**: two counters orchestrate alternating cycles—odd clock loads address (`MAR_in` high), even clock writes data (`RAM_wr` high). :contentReference[oaicite:16]{index=16}
-- **Data path**: `Debug → Address → MAR_in → clk → Instruction → RAM_wr → clk → data committed`. :contentReference[oaicite:17]{index=17}
+- **Goal**: eliminate switch-by-switch RAM programming; simulate realistic boot. 
+- **Design**: two counters orchestrate alternating cycles—odd clock loads address (`MAR_in` high), even clock writes data (`RAM_wr` high). 
+- **Data path**: `Debug → Address → MAR_in → clk → Instruction → RAM_wr → clk → data committed`.
 
 ### 8) Implement the unique `JMP`
-- **Approach**: keep fetch (`T1–T3`) standard; on `JMP`, assert `jmp_en` to **restart at T1** and **load PC from bus** (added PC load path). :contentReference[oaicite:18]{index=18}
-- **Result**: non-sequential flow (loops/branches) without rewiring the data path. :contentReference[oaicite:19]{index=19}
+- **Approach**: keep fetch (`T1–T3`) standard; on `JMP`, assert `jmp_en` to **restart at T1** and **load PC from bus** (added PC load path). 
+- **Result**: non-sequential flow (loops/branches) without rewiring the data path. 
 
 ### 9) Build the software toolchain (Assembler)
-- **Assembler in Python/Jupyter** converts assembly → hex machine code that the auto-loader ingests. :contentReference[oaicite:20]{index=20}
-- **Why**: guarantees consistency between source, opcode dictionary, and microcode; speeds iteration. :contentReference[oaicite:21]{index=21}
+- **Assembler in Python/Jupyter** converts assembly → hex machine code that the auto-loader ingests. 
+- **Why**: guarantees consistency between source, opcode dictionary, and microcode; speeds iteration. 
 
 ### 10) Test & validate
-- Run sample programs through the **auto-loader → sequencer → data path**; verify ALU ops and control timing across T-states. :contentReference[oaicite:22]{index=22}
-- Outcomes: correct execution on all tests; stable control; large reduction in setup time; `JMP` verified; assembler–hardware compatibility confirmed. :contentReference[oaicite:23]{index=23}
+- Run sample programs through the **auto-loader → sequencer → data path**; verify ALU ops and control timing across T-states. 
+- Outcomes: correct execution on all tests; stable control; large reduction in setup time; `JMP` verified; assembler–hardware compatibility confirmed. 
 
 # Control Signals
 ### Control flow (big picture)
